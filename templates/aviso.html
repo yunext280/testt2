@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>EInkBot - Aviso</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page-content">
+        <div class="cards-container">
+            <a href="https://aviso.bz/login" class="card">SIGN IN {% if aviso_done %}✔{% endif %}</a>
+            <!-- <a href="https://m.youtube.com/feed/library?hl=en" class="card">YouTube {% if yt_done %}✔{% endif %}</a> -->
+            <div class="card">
+                <div style="font-size:0.95rem;margin-bottom:6px;opacity:0.9;">Get your API key from:</div>
+                <div style="display:flex;margin-bottom:14px;">
+                    <input id="apiKeySource" type="text" readonly value="https://t.me/Xevil_check_bot"
+                           style="flex:1;min-width:0;padding:10px 12px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;">
+                    <button id="btnCopyKeySource" class="icon-btn" onclick="copyKeySource()" style="margin-left:8px;" aria-label="Copy link" title="Copy"><svg id="copyKeyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                </div>
+            </div>
+            <div class="card">
+                <div style="font-size:0.95rem;font-weight:400;letter-spacing:0;text-transform:none;margin-bottom:14px;opacity:0.9;">
+                    Captcha API Key
+                </div>
+                <div style="display:flex;margin-bottom:10px;">
+                    <input id="captchaKeyInput" type="password" value="{{ captcha_key }}" placeholder="SCTG API key"
+                           style="flex:1;min-width:0;padding:10px 12px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;">
+                    <button id="btnToggleKey" class="icon-btn" onclick="toggleCaptchaKey()" style="margin-left:8px;" aria-label="Show key" title="Show"><svg id="eyeKeyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                </div>
+                <button id="btnSaveKey" class="bot-btn" onclick="saveCaptchaKey()">Save</button>
+                <div id="captchaKeyMsg" style="font-size:0.85rem;margin-top:8px;opacity:0.9;"></div>
+                <div style="font-size:0.95rem;margin-top:12px;opacity:0.9;">Captcha balance: <span id="captchaBalance">{{ captcha_balance }}</span></div>
+            </div>
+        </div>
+        <div id="authMessage" class="auth-message" style="display:none">⚠️ Please log in to aviso.bz</div>
+        <!-- <div id="ytAuthMessage" class="auth-message" style="display:none">⚠️ Stop the bot, please log in to YouTube to complete YouTube tasks if you want. Then start the bot.</div> -->
+        {% if not libs_installed %}
+        <div class="card" id="installCard" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;">
+            <div style="font-size:0.95rem;font-weight:400;letter-spacing:0;text-transform:none;margin-bottom:14px;opacity:0.9;">
+                System reinstallation to resolve operational issues
+            </div>
+            <button id="btnInstall" class="bot-btn" onclick="installDeps()">Install</button>
+            <div id="installProgressWrap" style="display:none;margin-top:12px;">
+                <div style="width:100%;height:10px;background:rgba(255,255,255,0.1);border-radius:6px;overflow:hidden;">
+                    <div id="installProgressBar" style="width:0%;height:100%;background:#00ff44;transition:width 0.3s ease;"></div>
+                </div>
+                <div id="installProgressText" style="font-size:0.8rem;margin-top:6px;opacity:0.85;">Starting...</div>
+            </div>
+        </div>
+        <script>
+        (function(){
+            var btnInstall = document.getElementById('btnInstall');
+            var wrap = document.getElementById('installProgressWrap');
+            var bar = document.getElementById('installProgressBar');
+            var txt = document.getElementById('installProgressText');
+            var started = false;
+            window.installDeps = function(){
+                if(btnInstall.disabled) return;
+                btnInstall.disabled = true;
+                fetch("/install_deps?token={{ token }}", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({service:"aviso"})})
+                .then(function(r){return r.json()}).then(function(d){
+                    if(d.status === "already_installed"){
+                        location.reload();
+                        return;
+                    }
+                    wrap.style.display = 'block';
+                    if(!started){
+                        started = true;
+                        setInterval(function(){
+                            fetch("/stream_status?token={{ token }}").then(function(r){return r.json()}).then(function(d){
+                                if(d.installing_libs){
+                                    bar.style.width = (d.install_progress || 0) + '%';
+                                    txt.textContent = (d.install_progress || 0) + '%';
+                                } else {
+                                    location.reload();
+                                }
+                            }).catch(function(){});
+                        }, 2000);
+                    }
+                }).catch(function(){
+                    btnInstall.disabled = false;
+                });
+            };
+        })();
+        </script>
+        {% endif %}
+        {% if aviso_done %}
+        <div class="stream-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Offline</span>
+        </div>
+        <div class="bot-controls" id="botControls">
+            <button id="btnStart" class="bot-btn" onclick="botStart()" {% if bot_started %}disabled{% endif %}>Start</button>
+            <button id="btnStop" class="bot-btn" onclick="botStop()" {% if not bot_started %}disabled{% endif %}>Stop</button>
+        </div>
+        <div class="screenshot-container">
+            <img id="streamView" class="stream-view" style="display:none" alt="Live browser stream">
+        </div>
+        <script>
+        (function(){
+            var statusDot = document.getElementById('statusDot');
+            var statusText = document.getElementById('statusText');
+            var authMsg = document.getElementById('authMessage');
+            // var ytAuthMsg = document.getElementById('ytAuthMessage');
+            setInterval(function(){
+                fetch("/stream_status?token={{ token }}").then(function(r){return r.json()}).then(function(d){
+                    if(!d.aviso_valid){
+                        authMsg.style.display = 'block';
+                        // ytAuthMsg.style.display = 'none';
+                        statusDot.className = 'status-dot offline';
+                        statusText.textContent = 'Offline';
+                        document.getElementById('streamView').style.display = 'none';
+                        document.getElementById('botControls').style.display = 'none';
+                        return;
+                    }
+                    authMsg.style.display = 'none';
+                    // ytAuthMsg.style.display = d.yt_valid ? 'none' : 'block';
+                    if(d.active){
+                        statusDot.className = 'status-dot live';
+                        statusText.textContent = 'Live';
+                        document.getElementById('streamView').src='/video_feed?token={{ token }}';
+                        document.getElementById('streamView').style.display='block';
+                    } else if(d.bot_running){
+                        statusDot.className = 'status-dot connecting';
+                        statusText.textContent = 'Connecting...';
+                        document.getElementById('streamView').style.display = 'none';
+                    } else {
+                        statusDot.className = 'status-dot offline';
+                        statusText.textContent = 'Offline';
+                        document.getElementById('streamView').style.display = 'none';
+                    }
+                    document.getElementById('btnStart').disabled = d.bot_running;
+                    document.getElementById('btnStop').disabled = !d.bot_running;
+                }).catch(function(){});
+            }, 2000);
+        })();
+        </script>
+        {% endif %}
+    </div>
+    <div class="version">v{{ version }}</div>
+    <script>
+    var ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+    var ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#00ff44;"><path d="M20 6L9 17l-5-5"></path></svg>';
+    var ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    var ICON_EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+    function copyKeySource() {
+        var url = document.getElementById('apiKeySource').value;
+        var btn = document.getElementById('btnCopyKeySource');
+        function done() {
+            btn.innerHTML = ICON_CHECK;
+            setTimeout(function(){ btn.innerHTML = ICON_COPY; }, 1500);
+        }
+        function fallback() {
+            var ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch(e){}
+            document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done, function(){ fallback(); done(); });
+        } else {
+            fallback();
+            done();
+        }
+    }
+    function toggleCaptchaKey() {
+        var input = document.getElementById('captchaKeyInput');
+        var btn = document.getElementById('btnToggleKey');
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = ICON_EYE_OFF;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = ICON_EYE;
+        }
+    }
+    function saveCaptchaKey() {
+        var input = document.getElementById('captchaKeyInput');
+        var msg = document.getElementById('captchaKeyMsg');
+        fetch("/set_captcha_key?token={{ token }}", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({captcha_key: input.value})})
+        .then(function(r){return r.json()}).then(function(d){
+            if(d.status === "ok"){
+                msg.textContent = 'Saved';
+                msg.style.color = '#00ff44';
+                fetchCaptchaBalance();
+            } else {
+                msg.textContent = d.message || 'Error';
+                msg.style.color = '#ff5555';
+            }
+        }).catch(function(){
+            msg.textContent = 'Error';
+            msg.style.color = '#ff5555';
+        });
+    }
+    function fetchCaptchaBalance() {
+        fetch("/captcha_balance?token={{ token }}", {method:"POST"})
+        .then(function(r){return r.json()}).then(function(d){
+            document.getElementById('captchaBalance').textContent = d.balance || '';
+        }).catch(function(){});
+    }
+    fetchCaptchaBalance();
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+    function botStart() {
+        fetch("/bot/start?token={{ token }}", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({user_agent: navigator.userAgent})})
+        .then(r=>r.json()).then(()=>location.reload());
+    }
+    function botStop() {
+        fetch("/bot/stop?token={{ token }}", {method:"POST"})
+        .then(r=>r.json()).then(()=>location.reload());
+    }
+    </script>
+    <script src="{{ url_for('static', filename='ad_check.js') }}"></script>
+</body>
+</html>

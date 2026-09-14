@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>EInkBot - Seotime</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page-content">
+        <h2 style="font-size:2rem;color:#fff;text-shadow:0 0 10px rgba(255,255,255,0.5);">Seotime</h2>
+    </div>
+    <div class="version">v{{ version }}</div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='ad_check.js') }}"></script>
+</body>
+</html>

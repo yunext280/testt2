@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>EInkBot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="cards-container">
+        <a href="/aviso?token={{ token }}" class="card">Aviso</a>
+        <!-- <a href="/seotime?token={{ token }}" class="card">Seotime</a> -->
+    </div>
+    <div class="version">v{{ version }}</div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+    fetch("/set_user_agent?token={{ token }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({user_agent: navigator.userAgent})
+    })
+    </script>
+    <script src="{{ url_for('static', filename='ad_check.js') }}"></script>
+</body>
+</html>
