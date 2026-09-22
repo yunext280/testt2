@@ -32,7 +32,7 @@ install_progress = 0
 # Notification text served to the app (change here only — no app rebuild needed)
 NOTIFY_WORKING = "Working..."
 NOTIFY_AD_PENDING = "Watch Ad to continue"
-NOTIFY_STOPPED = "البوت توقف"
+NOTIFY_STOPPED = "Bot stopped"
 
 def get_notify_text():
     if not selenium_bot.is_running():
