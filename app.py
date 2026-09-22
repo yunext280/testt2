@@ -29,6 +29,18 @@ ad_pending = False
 installing_service = None
 install_progress = 0
 
+# Notification text served to the app (change here only — no app rebuild needed)
+NOTIFY_WORKING = "Working..."
+NOTIFY_AD_PENDING = "Watch Ad to continue"
+NOTIFY_STOPPED = "البوت توقف"
+
+def get_notify_text():
+    if not selenium_bot.is_running():
+        return NOTIFY_STOPPED
+    if ad_pending:
+        return NOTIFY_AD_PENDING
+    return NOTIFY_WORKING
+
 VERSION = "0"
 try:
     with open(os.path.expanduser("~/version.md")) as f:
@@ -274,7 +286,8 @@ def stream_status():
         "installing_libs": installing_service is not None,
         "installing_service": installing_service,
         "install_progress": install_progress,
-        "ad_pending": ad_pending
+        "ad_pending": ad_pending,
+        "notify_text": get_notify_text()
     })
 
 @app.route("/health")
