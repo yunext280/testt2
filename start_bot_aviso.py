@@ -86,7 +86,10 @@ def _bot_worker(user_agent):
         driver.save_screenshot(os.path.expanduser("~/aviso_screenshot.png"))
         _stop_event.wait()
     except Exception as e:
-        print(f"ERROR: Bot error during execution: {e}")
+        if should_stop():
+            print("STOP: Bot stopped by user")
+        else:
+            print(f"ERROR: Bot error during execution: {e}")
     finally:
         print("STOP: Closing bot and cleaning up...")
         if selenium_bot._ffmpeg_proc:
