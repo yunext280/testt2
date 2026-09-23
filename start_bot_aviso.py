@@ -14,7 +14,7 @@ from selenium_bot import (
 import selenium_bot
 from aviso_bot import (
     login_aviso, Surfing, scrol_Surfing,
-    av_ytub, av_ytub_ref, yt_url, chek_captcha
+    av_ytub, av_ytub_ref, yt_url, maybe_solve_captcha
 )
 
 def _run_surf(driver):
@@ -45,8 +45,17 @@ def _run_tube(driver):
         #         print("STOP: Bot stopped while waiting for ad")
         #         return
         if "data" not in veryfi:
-            while chek_captcha(driver,30//3):
-                interruptible_sleep(1)
+            # actively solve the captcha (max 3 attempts) before retrying the task
+            attempts = 0
+            while True:
+                if should_stop():
+                    return False
+                if not maybe_solve_captcha(driver, 5):
+                    break
+                attempts += 1
+                if attempts >= 3:
+                    break
+                interruptible_sleep(2)
             yt_url(driver,20,veryfi['sek'],veryfi["tub_id"])
         elif veryfi["data"] == 'break':
             break
