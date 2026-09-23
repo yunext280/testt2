@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import threading
 import time
 import urllib.request
@@ -25,14 +26,12 @@ def create_driver(user_agent=None):
     prefs = {"profile.default_content_setting_values.notifications": 2}
     options.add_experimental_option("prefs", prefs)
     options.add_argument("--lang=en")
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_argument('--ignore-certificate-errors-spki-list')
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--ignore-ssl-errors')
     options.add_experimental_option("detach", True)
     options.add_experimental_option("useAutomationExtension", False)
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_argument("disable-blink-features")
+    options.add_experimental_option("excludeSwitches", ["enable-logging", "enable-automation"])
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_argument('--disable-gpu')
     options.add_argument("--log-level=3")
@@ -55,6 +54,13 @@ def create_driver(user_agent=None):
     service = Service(executable_path="/usr/bin/chromedriver")
     service.env = {"DISPLAY": DISPLAY_NUM}
     driver = webdriver.Chrome(service=service, options=options)
+    # Hide the automation fingerprint (navigator.webdriver) before any navigation
+    try:
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
+        })
+    except Exception:
+        pass
     driver.set_page_load_timeout(30)
     return driver
 
@@ -76,6 +82,90 @@ def interruptible_sleep(seconds):
         if _stop_event.is_set():
             return
         time.sleep(min(0.5, end - time.time()))
+
+def _page_ready(driver):
+    """Return True when the page finished loading (document.readyState == complete)."""
+    try:
+        return driver.execute_script("return document.readyState") == "complete"
+    except Exception:
+        return True
+
+
+def wait_any(driver, locators, timeout, poll=0.5):
+    """Return the first visible element matching any locator, or None after timeout.
+    Checks multiple candidates in parallel and stays interruptible (should_stop)."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if should_stop():
+            return None
+        for loc in locators:
+            try:
+                for el in driver.find_elements(*loc):
+                    if el.is_displayed():
+                        return el
+            except Exception:
+                pass
+        interruptible_sleep(poll)
+    return None
+
+
+def wait_list(driver, locators, timeout, poll=0.5):
+    """Return a list of visible elements matching ANY of the given locators
+    as soon as the first one appears. Exits early ([]) when the page is fully
+    loaded with no matches, instead of blocking the full timeout."""
+    start = time.time()
+    deadline = start + timeout
+    while time.time() < deadline:
+        if should_stop():
+            return []
+        visible = []
+        for loc in locators:
+            try:
+                for el in driver.find_elements(*loc):
+                    if el.is_displayed():
+                        visible.append(el)
+            except Exception:
+                pass
+        if visible:
+            return visible
+        if _page_ready(driver) and time.time() - start > 4:
+            return []
+        interruptible_sleep(poll)
+    return []
+
+
+def human_order(n):
+    """Mimic a human picking tasks: sometimes in order, sometimes fully random,
+    and sometimes consecutive runs with occasional jumps (like reading the page)."""
+    mode = random.choices(["ordered", "random", "mixed"], weights=[30, 30, 40])[0]
+
+    if mode == "ordered":
+        return list(range(n))
+
+    if mode == "random":
+        order = list(range(n))
+        random.shuffle(order)
+        return order
+
+    # mixed: consecutive runs + random jumps
+    remaining = list(range(n))
+    order = []
+    cursor = -1
+    while remaining:
+        if random.random() < 0.35:
+            idx = random.choice(remaining)
+        else:
+            nxt = cursor + 1
+            if nxt in remaining:
+                idx = nxt
+            else:
+                ahead = [x for x in remaining if x >= nxt]
+                idx = min(ahead) if ahead else min(remaining)
+        order.append(idx)
+        remaining.remove(idx)
+        cursor = idx
+    return order
+
 
 def wait_for_ad_watched():
     path = os.path.expanduser("~/ad_watched.json")
