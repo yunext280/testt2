@@ -245,7 +245,7 @@ def screenshot_aviso():
 def listen_udp():
     global latest_frame
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('127.0.0.1', 9999))
+    sock.bind(('127.0.0.1', 9998))
     sock.settimeout(1)
     buf = b''
     while True:
