@@ -26,10 +26,10 @@ def _run_surf(driver):
             return False
         scrol_Surfing(driver,20,Surfing_ad)
 
-    notify_ad_ready()
-    if not wait_for_ad_watched():
-        print("STOP: Bot stopped while waiting for ad")
-        return False
+    # notify_ad_ready()
+    # if not wait_for_ad_watched():
+    #     print("STOP: Bot stopped while waiting for ad")
+    #     return False
     return True
 
 
@@ -39,11 +39,11 @@ def _run_tube(driver):
     for i in human_order(len(all_tube)):
         tube = all_tube[i]
         veryfi = av_ytub_ref(driver,20,tube)
-        if skrol > 0 and skrol % 10 ==0 :
-            notify_ad_ready()
-            if not wait_for_ad_watched():
-                print("STOP: Bot stopped while waiting for ad")
-                return False
+        # if skrol > 0 and skrol % 10 == 0:
+        #     notify_ad_ready()
+        #     if not wait_for_ad_watched():
+        #         print("STOP: Bot stopped while waiting for ad")
+        #         return False
         if "data" not in veryfi:
             while chek_captcha(driver,30//3):
                 interruptible_sleep(1)
