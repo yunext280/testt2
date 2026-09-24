@@ -18,6 +18,16 @@ _driver_lock = threading.Lock()
 _ffmpeg_proc = None
 _bot_thread = None
 
+# Bot state reported to the phone: idle | starting | working | finished | stopped | need_login | error
+_bot_state = "idle"
+
+def set_bot_state(state):
+    global _bot_state
+    _bot_state = state
+
+def get_bot_state():
+    return _bot_state
+
 def create_driver(user_agent=None):
 
     options = Options()
@@ -255,6 +265,7 @@ def start_bot(user_agent=None):
             return False
         _starting = True
         _stop_event.clear()
+        set_bot_state("starting")
     thread = threading.Thread(target=_bot_worker, args=(user_agent,), daemon=True)
     thread.start()
     _bot_thread = thread
@@ -263,6 +274,7 @@ def start_bot(user_agent=None):
 def stop_bot():
     global _bot_thread
     _stop_event.set()
+    set_bot_state("stopped")
     try:
         _driver.quit()
     except Exception:

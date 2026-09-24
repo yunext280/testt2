@@ -19,6 +19,8 @@ if not LIBS_INSTALLED:
         def stop_bot(*args, **kwargs): pass
         @staticmethod
         def is_running(): return False
+        @staticmethod
+        def get_bot_state(): return "idle"
     selenium_bot = DummySeleniumBot()
 
 app = Flask(__name__)
@@ -30,15 +32,33 @@ installing_service = None
 install_progress = 0
 
 # Notification text served to the app (change here only — no app rebuild needed)
+NOTIFY_STARTED = "Bot started"
 NOTIFY_WORKING = "Working..."
 NOTIFY_AD_PENDING = "Watch Ad to continue"
-NOTIFY_STOPPED = "Bot stopped"
+NOTIFY_FINISHED = "All tasks completed"
+NOTIFY_STOPPED = "Stopped by user"
+NOTIFY_NEED_LOGIN = "Please log in to aviso.bz"
+NOTIFY_ERROR = "Bot stopped"
+
+_STATE_TEXT = {
+    "starting": NOTIFY_STARTED,
+    "working": NOTIFY_WORKING,
+    "finished": NOTIFY_FINISHED,
+    "stopped": NOTIFY_STOPPED,
+    "need_login": NOTIFY_NEED_LOGIN,
+    "error": NOTIFY_ERROR,
+}
 
 def get_notify_text():
-    if not selenium_bot.is_running():
-        return NOTIFY_STOPPED
+    # Ad prompt always wins: the bot is paused until the ad is watched
     if ad_pending:
         return NOTIFY_AD_PENDING
+    state = selenium_bot.get_bot_state()
+    if state in _STATE_TEXT:
+        return _STATE_TEXT[state]
+    if not selenium_bot.is_running() and \
+            not os.path.exists(os.path.expanduser("~/aviso_cookies.json")):
+        return NOTIFY_NEED_LOGIN
     return NOTIFY_WORKING
 
 VERSION = "0"

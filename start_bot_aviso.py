@@ -8,7 +8,7 @@ if os.path.exists(av):
 from xvfb_manager import _start_xvfb, _kill_all, start_ffmpeg, DISPLAY_NUM
 from selenium_bot import (
     create_driver, should_stop, interruptible_sleep,
-    wait_for_ad_watched, notify_ad_ready, human_order,
+    wait_for_ad_watched, notify_ad_ready, human_order, set_bot_state,
     _stop_event, _driver, _driver_lock, _starting, _ffmpeg_proc
 )
 import selenium_bot
@@ -26,10 +26,10 @@ def _run_surf(driver):
             return False
         scrol_Surfing(driver,20,Surfing_ad)
 
-    # notify_ad_ready()
-    # if not wait_for_ad_watched():
-    #     print("STOP: Bot stopped while waiting for ad")
-    #     return
+    notify_ad_ready()
+    if not wait_for_ad_watched():
+        print("STOP: Bot stopped while waiting for ad")
+        return False
     return True
 
 
@@ -39,11 +39,11 @@ def _run_tube(driver):
     for i in human_order(len(all_tube)):
         tube = all_tube[i]
         veryfi = av_ytub_ref(driver,20,tube)
-        # if skrol > 0 and skrol % 10 ==0 :
-        #     notify_ad_ready()
-        #     if not wait_for_ad_watched():
-        #         print("STOP: Bot stopped while waiting for ad")
-        #         return
+        if skrol > 0 and skrol % 10 ==0 :
+            notify_ad_ready()
+            if not wait_for_ad_watched():
+                print("STOP: Bot stopped while waiting for ad")
+                return False
         if "data" not in veryfi:
             while chek_captcha(driver,30//3):
                 interruptible_sleep(1)
@@ -64,6 +64,7 @@ def _bot_worker(user_agent):
         with selenium_bot._driver_lock:
             selenium_bot._driver = driver
         if login_aviso(driver):
+            set_bot_state("working")
             if should_stop():
                 print("STOP: Bot stopped before ad display")
                 return
@@ -73,12 +74,15 @@ def _bot_worker(user_agent):
                 if not phase(driver):
                     return
         else:
+            set_bot_state("need_login")
             return
+        set_bot_state("finished")
         print("STOP: Bot finished all tasks, stopping automatically")
     except Exception as e:
         if should_stop():
             print("STOP: Bot stopped by user")
         else:
+            set_bot_state("error")
             print(f"ERROR: Bot error during execution: {e}")
     finally:
         print("STOP: Closing bot and cleaning up...")
