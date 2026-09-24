@@ -74,8 +74,7 @@ def _bot_worker(user_agent):
                     return
         else:
             return
-        driver.save_screenshot(os.path.expanduser("~/aviso_screenshot.png"))
-        _stop_event.wait()
+        print("STOP: Bot finished all tasks, stopping automatically")
     except Exception as e:
         if should_stop():
             print("STOP: Bot stopped by user")

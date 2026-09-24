@@ -1,6 +1,6 @@
 import os, socket, json, threading, time
 import requests
-from flask import Flask, request, abort, render_template, jsonify, send_file, Response
+from flask import Flask, request, abort, render_template, jsonify, Response
 from installer import is_service_ready, run_install_script
 
 # Bot init: if the libs are missing at startup, fall back to a dummy bot to avoid a crash
@@ -234,13 +234,6 @@ def bot_ad_ready():
     global ad_pending
     ad_pending = True
     return jsonify({"status": "ok"})
-
-@app.route("/screenshot/aviso")
-def screenshot_aviso():
-    path = os.path.expanduser("~/aviso_screenshot.png")
-    if os.path.exists(path):
-        return send_file(path, mimetype="image/png")
-    return "", 404
 
 def listen_udp():
     global latest_frame
