@@ -173,10 +173,23 @@ def start_bot(user_agent=None):
 def stop_bot():
     global _bot_thread
     _stop_event.set()
+    thread = _bot_thread
+    # 1) Graceful window: let the worker close the browser via driver.quit()
+    #    in its own finally block, then ensure Selenium closes it cleanly.
+    if thread is not None and thread is not threading.current_thread():
+        thread.join(timeout=10)
+        try:
+            _driver.quit()
+        except Exception:
+            pass
+    # 2) Kill leftover processes (chromium / ffmpeg / Xvfb).
     from xvfb_manager import _kill_all
     _kill_all()
-    if _bot_thread is not None and _bot_thread is not threading.current_thread():
-        _bot_thread.join(timeout=10)
+    # 3) Verification after the kill: wait for the thread to finish cleanup.
+    if thread is not None and thread is not threading.current_thread():
+        thread.join(timeout=10)
+        if thread.is_alive():
+            print("WARN: bot thread still alive after stop cleanup")
     _bot_thread = None
 
 def is_running():
