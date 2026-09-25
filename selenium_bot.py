@@ -28,6 +28,32 @@ def set_bot_state(state):
 def get_bot_state():
     return _bot_state
 
+# ---- Ring notifications (controlled by the server, delivered once) ----
+_notify_ring = False
+_notify_ring_text = None
+
+def ring_notify():
+    """Ring the current bot state notification (delivered once)."""
+    global _notify_ring
+    _notify_ring = True
+
+def ring_notify_text(text):
+    """Ring a custom text notification (delivered once)."""
+    global _notify_ring_text
+    _notify_ring_text = text
+
+def take_notify_ring(notify_text):
+    """Called by /stream_status: returns the ring text or '' once."""
+    global _notify_ring, _notify_ring_text
+    if _notify_ring_text is not None:
+        t = _notify_ring_text
+        _notify_ring_text = None
+        return t
+    if _notify_ring:
+        _notify_ring = False
+        return notify_text
+    return ""
+
 def create_driver(user_agent=None):
 
     options = Options()

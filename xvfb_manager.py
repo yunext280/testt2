@@ -39,6 +39,6 @@ def start_ffmpeg():
         '-update', '1',
         '-vcodec', 'mjpeg',
         '-q:v', '5',
-        'udp://127.0.0.1:9998?pkt_size=60000'
+        'udp://127.0.0.1:9999?pkt_size=60000'
     ]
     return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

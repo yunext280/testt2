@@ -21,6 +21,12 @@ if not LIBS_INSTALLED:
         def is_running(): return False
         @staticmethod
         def get_bot_state(): return "idle"
+        @staticmethod
+        def ring_notify(): pass
+        @staticmethod
+        def ring_notify_text(text): pass
+        @staticmethod
+        def take_notify_ring(notify_text): return ""
     selenium_bot = DummySeleniumBot()
 
 app = Flask(__name__)
@@ -261,12 +267,13 @@ def bot_ad_watched():
 def bot_ad_ready():
     global ad_pending
     ad_pending = True
+    selenium_bot.ring_notify()  # ring: an ad must be watched
     return jsonify({"status": "ok"})
 
 def listen_udp():
     global latest_frame
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('127.0.0.1', 9998))
+    sock.bind(('127.0.0.1', 9999))
     sock.settimeout(1)
     buf = b''
     while True:
@@ -298,6 +305,7 @@ def video_feed():
 
 @app.route("/stream_status")
 def stream_status():
+    _nt = get_notify_text()
     return jsonify({
         "active": latest_frame is not None and selenium_bot.is_running(),
         "bot_running": selenium_bot.is_running(),
@@ -308,7 +316,8 @@ def stream_status():
         "installing_service": installing_service,
         "install_progress": install_progress,
         "ad_pending": ad_pending,
-        "notify_text": get_notify_text()
+        "notify_ring": selenium_bot.take_notify_ring(_nt),
+        "notify_text": _nt
     })
 
 @app.route("/health")
