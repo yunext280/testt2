@@ -55,13 +55,17 @@ def _run_tube(driver):
     return True
 
 
-def _run_letters(driver):
+def _run_letters(driver, retry=0):
     letters = task_letters(driver, 20)
     for i in human_order(len(letters)):
         if should_stop():
             print("STOP: Bot stopped during letters")
             return False
-        answ_task_letter(driver, 20, letters[i])
+        if not answ_task_letter(driver, 20, letters[i]):
+            if retry < 3:
+                print(f"RETRY: letters retry {retry + 1}/3")
+                return _run_letters(driver, retry + 1)
+            break
     return True
 
 
