@@ -18,7 +18,7 @@ body, html {
 /* Breathing space at the top and bottom of every Flask page
    (separates the MREC, which scrolls above the page, from the content) */
 body {
-    padding-top: 80px;
+    padding-top: 30px;
     padding-bottom: 80px;
 }
 
