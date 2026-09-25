@@ -14,7 +14,8 @@ from selenium_bot import (
 import selenium_bot
 from aviso_bot import (
     login_aviso, Surfing, scrol_Surfing,
-    av_ytub, av_ytub_ref, yt_url, chek_captcha
+    av_ytub, av_ytub_ref, yt_url, chek_captcha,
+    task_letters, answ_task_letter
 )
 
 def _run_surf(driver):
@@ -54,6 +55,16 @@ def _run_tube(driver):
     return True
 
 
+def _run_letters(driver):
+    letters = task_letters(driver, 20)
+    for i in human_order(len(letters)):
+        if should_stop():
+            print("STOP: Bot stopped during letters")
+            return False
+        answ_task_letter(driver, 20, letters[i])
+    return True
+
+
 def _bot_worker(user_agent):
     try:
         _kill_all()
@@ -68,7 +79,7 @@ def _bot_worker(user_agent):
             if should_stop():
                 print("STOP: Bot stopped before ad display")
                 return
-            phases = [_run_surf, _run_tube]
+            phases = [_run_surf, _run_tube, _run_letters]
             random.shuffle(phases)
             for phase in phases:
                 if not phase(driver):
