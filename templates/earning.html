@@ -10,6 +10,14 @@
     <div class="page-content">
         <div class="cards-container">
             <div class="card">
+                <div style="font-size:0.95rem;margin-bottom:6px;opacity:0.9;">Get your API key from:</div>
+                <div style="display:flex;margin-bottom:14px;">
+                    <input id="apiKeySource" type="text" readonly value="https://t.me/Xevil_check_bot"
+                           style="flex:1;min-width:0;padding:10px 12px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;">
+                    <button id="btnCopyKeySource" class="icon-btn" onclick="copyKeySource()" style="margin-left:8px;" aria-label="Copy link" title="Copy"><svg id="copyKeyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                </div>
+            </div>
+            <div class="card">
                 <div style="font-size:0.95rem;font-weight:400;letter-spacing:0;text-transform:none;margin-bottom:14px;opacity:0.9;">
                     Captcha API Key
                 </div>
@@ -27,8 +35,34 @@
     </div>
     <div class="version">v{{ version }}</div>
     <script>
+    var ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+    var ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#00ff44;"><path d="M20 6L9 17l-5-5"></path></svg>';
     var ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
     var ICON_EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+    function copyKeySource() {
+        var url = document.getElementById('apiKeySource').value;
+        var btn = document.getElementById('btnCopyKeySource');
+        function done() {
+            btn.innerHTML = ICON_CHECK;
+            setTimeout(function(){ btn.innerHTML = ICON_COPY; }, 1500);
+        }
+        function fallback() {
+            var ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch(e){}
+            document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done, function(){ fallback(); done(); });
+        } else {
+            fallback();
+            done();
+        }
+    }
     function toggleCaptchaKey() {
         var input = document.getElementById('captchaKeyInput');
         var btn = document.getElementById('btnToggleKey');
