@@ -5,12 +5,8 @@ import importlib
 
 SERVICE_REQUIREMENTS = {
     "aviso": {
-        "python": ["requests", "bs4"],
+        "python": ["flask_cors", "requests", "bs4", "selenium", "flask", "cryptography", "openrouter"],
         "system": []
-    },
-    "seotime": {
-        "python": [],
-        "system": ["curl"]
     }
 }
 
