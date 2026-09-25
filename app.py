@@ -106,6 +106,14 @@ def aviso():
                            captcha_balance=solv.get("balance_solv", ""),
                            token=TOKEN)
 
+@app.route("/earning")
+def earning():
+    solv = read_captcha_solv()
+    return render_template("earning.html", version=VERSION,
+                           captcha_key=solv.get("captcha_key", ""),
+                           captcha_balance=solv.get("balance_solv", ""),
+                           token=TOKEN)
+
 @app.route("/seotime")
 def seotime():
     return render_template("seotime.html", version=VERSION)

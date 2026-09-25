@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>EInkBot - Earning</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page-content">
+        <div class="cards-container">
+            <div class="card">
+                <div style="font-size:0.95rem;font-weight:400;letter-spacing:0;text-transform:none;margin-bottom:14px;opacity:0.9;">
+                    Captcha API Key
+                </div>
+                <div style="display:flex;margin-bottom:10px;">
+                    <input id="captchaKeyInput" type="password" value="{{ captcha_key }}" placeholder="SCTG API key"
+                           style="flex:1;min-width:0;padding:10px 12px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;">
+                    <button id="btnToggleKey" class="icon-btn" onclick="toggleCaptchaKey()" style="margin-left:8px;" aria-label="Show key" title="Show"><svg id="eyeKeyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                </div>
+                <button id="btnSaveKey" class="bot-btn" onclick="saveCaptchaKey()">Save</button>
+                <div id="captchaKeyMsg" style="font-size:0.85rem;margin-top:8px;opacity:0.9;"></div>
+                <div style="font-size:0.95rem;margin-top:12px;opacity:0.9;">Captcha balance: <span id="captchaBalance">{{ captcha_balance }}</span></div>
+            </div>
+            <a href="/aviso?token={{ token }}" class="card">Aviso</a>
+        </div>
+    </div>
+    <div class="version">v{{ version }}</div>
+    <script>
+    var ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    var ICON_EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:#fff;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+    function toggleCaptchaKey() {
+        var input = document.getElementById('captchaKeyInput');
+        var btn = document.getElementById('btnToggleKey');
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = ICON_EYE_OFF;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = ICON_EYE;
+        }
+    }
+    function saveCaptchaKey() {
+        var input = document.getElementById('captchaKeyInput');
+        var msg = document.getElementById('captchaKeyMsg');
+        fetch("/set_captcha_key?token={{ token }}", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({captcha_key: input.value})})
+        .then(function(r){return r.json()}).then(function(d){
+            if(d.status === "ok"){
+                msg.textContent = 'Saved';
+                msg.style.color = '#00ff44';
+                fetchCaptchaBalance();
+            } else {
+                msg.textContent = d.message || 'Error';
+                msg.style.color = '#ff5555';
+            }
+        }).catch(function(){
+            msg.textContent = 'Error';
+            msg.style.color = '#ff5555';
+        });
+    }
+    function fetchCaptchaBalance() {
+        fetch("/captcha_balance?token={{ token }}", {method:"POST"})
+        .then(function(r){return r.json()}).then(function(d){
+            document.getElementById('captchaBalance').textContent = d.balance || '';
+        }).catch(function(){});
+    }
+    fetchCaptchaBalance();
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
