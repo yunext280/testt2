@@ -55,7 +55,21 @@ _STATE_TEXT = {
     "error": NOTIFY_ERROR,
 }
 
+# One-shot custom silent text (no ring): send_text_no_ring() queues it, the existing
+# /stream_status pipeline delivers it as notify_text (no separate route needed).
+_custom_notify = None
+
+def send_text_no_ring(text):
+    """Queue a custom notification text to show silently (no ring). Ready for future callers."""
+    global _custom_notify
+    _custom_notify = text
+
 def get_notify_text():
+    # Custom silent text wins (like a ring's custom text): shown once, then consumed
+    global _custom_notify
+    if _custom_notify:
+        t, _custom_notify = _custom_notify, None
+        return t
     # Ad prompt always wins: the bot is paused until the ad is watched
     if ad_pending:
         return NOTIFY_AD_PENDING
