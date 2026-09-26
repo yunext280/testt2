@@ -1,5 +1,6 @@
 import os
 import random
+import json
 import decryptor
 av = os.path.expanduser("~/aviso_bot.py.enc")
 if os.path.exists(av):
@@ -28,11 +29,11 @@ def _run_surf(driver):
             return False
         scrol_Surfing(driver,20,Surfing_ad)
 
-    # Ad after surfing phase
-    notify_ad_ready()
-    if not wait_for_ad_watched():
-        print("STOP: Bot stopped while waiting for ad")
-        return False
+    # Ad after surfing phase (DISABLED: commented out, keep code)
+    # notify_ad_ready()
+    # if not wait_for_ad_watched():
+    #     print("STOP: Bot stopped while waiting for ad")
+    #     return False
     return True
 
 
@@ -43,12 +44,12 @@ def _run_tube(driver):
     for i in human_order(len(all_tube)):
         tube = all_tube[i]
         veryfi = av_ytub_ref(driver,20,tube)
-        # Ad every 10 finished videos
-        if skrol > 0 and skrol % 10 == 0:
-            notify_ad_ready()
-            if not wait_for_ad_watched():
-                print("STOP: Bot stopped while waiting for ad")
-                return False
+        # Ad every 10 finished videos (DISABLED: commented out, keep code)
+        # if skrol > 0 and skrol % 10 == 0:
+        #     notify_ad_ready()
+        #     if not wait_for_ad_watched():
+        #         print("STOP: Bot stopped while waiting for ad")
+        #         return False
         if "data" not in veryfi:
             while chek_captcha(driver,30//3):
                 interruptible_sleep(1)
@@ -88,11 +89,11 @@ def _bot_worker(user_agent):
             if should_stop():
                 print("STOP: Bot stopped before ad display")
                 return
-            # Ad appears after verifying valid cookies and logging in
-            notify_ad_ready()
-            if not wait_for_ad_watched():
-                print("STOP: Bot stopped while waiting for ad")
-                return
+            # Ad appears after verifying valid cookies and logging in (DISABLED: commented out, keep code)
+            # notify_ad_ready()
+            # if not wait_for_ad_watched():
+            #     print("STOP: Bot stopped while waiting for ad")
+            #     return
             phases = [_run_surf, _run_tube, _run_letters]
             random.shuffle(phases)
             for phase in phases:
@@ -103,6 +104,9 @@ def _bot_worker(user_agent):
             selenium_bot.ring_notify()  # ring: cookies expired or login failed
             return
         set_bot_state("finished")
+        sel_path = os.path.expanduser("~/sel_bot.json")
+        with open(sel_path, "w") as f:
+            json.dump({"start": False}, f)  # finished naturally: do not auto-restart
         selenium_bot.ring_notify()  # ring: all tasks completed
         print("STOP: Bot finished all tasks, stopping automatically")
     except Exception as e:
