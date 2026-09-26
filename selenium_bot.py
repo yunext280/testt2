@@ -18,7 +18,7 @@ _driver_lock = threading.Lock()
 _ffmpeg_proc = None
 _bot_thread = None
 
-# Bot state reported to the phone: idle | starting | working | finished | stopped | need_login | error
+# Bot state reported to the phone: idle | starting | logged_in | surfing | tube | letters | finished | stopped | need_login | error
 _bot_state = "idle"
 
 def set_bot_state(state):

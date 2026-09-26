@@ -19,6 +19,7 @@ from aviso_bot import (
 )
 
 def _run_surf(driver):
+    set_bot_state("surfing")
     Surfing_ads = Surfing(driver,20)
     for i in human_order(len(Surfing_ads)):
         Surfing_ad = Surfing_ads[i]
@@ -36,6 +37,7 @@ def _run_surf(driver):
 
 
 def _run_tube(driver):
+    set_bot_state("tube")
     all_tube = av_ytub(driver,20)
     skrol = 0
     for i in human_order(len(all_tube)):
@@ -58,6 +60,7 @@ def _run_tube(driver):
 
 
 def _run_letters(driver, retry=0):
+    set_bot_state("letters")
     letters = task_letters(driver, 20)
     for i in human_order(len(letters)):
         if should_stop():
@@ -81,7 +84,7 @@ def _bot_worker(user_agent):
         with selenium_bot._driver_lock:
             selenium_bot._driver = driver
         if login_aviso(driver):
-            set_bot_state("working")
+            set_bot_state("logged_in")
             if should_stop():
                 print("STOP: Bot stopped before ad display")
                 return
@@ -97,6 +100,7 @@ def _bot_worker(user_agent):
                     return
         else:
             set_bot_state("need_login")
+            selenium_bot.ring_notify()  # ring: cookies expired or login failed
             return
         set_bot_state("finished")
         selenium_bot.ring_notify()  # ring: all tasks completed

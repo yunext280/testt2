@@ -38,17 +38,25 @@ installing_service = None
 install_progress = 0
 
 # Notification text served to the app (change here only — no app rebuild needed)
-NOTIFY_STARTED = "Bot started"
+NOTIFY_STARTED = "Bot start"
 NOTIFY_WORKING = "Working..."
 NOTIFY_AD_PENDING = "Watch Ad to continue"
 NOTIFY_FINISHED = "All tasks completed"
 NOTIFY_STOPPED = "Stopped by user"
 NOTIFY_NEED_LOGIN = "Please log in to aviso.bz"
 NOTIFY_ERROR = "Bot stopped"
+NOTIFY_LOGIN_SUCCESS = "Login success"
+NOTIFY_SURFING = "Surfing..."
+NOTIFY_TUBE = "YouTube..."
+NOTIFY_LETTERS = "Letters..."
 
 _STATE_TEXT = {
     "starting": NOTIFY_STARTED,
     "working": NOTIFY_WORKING,
+    "logged_in": NOTIFY_LOGIN_SUCCESS,
+    "surfing": NOTIFY_SURFING,
+    "tube": NOTIFY_TUBE,
+    "letters": NOTIFY_LETTERS,
     "finished": NOTIFY_FINISHED,
     "stopped": NOTIFY_STOPPED,
     "need_login": NOTIFY_NEED_LOGIN,
