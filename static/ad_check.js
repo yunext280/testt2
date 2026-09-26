@@ -8,7 +8,7 @@
         _token = u.get('token') || '';
     }
     setInterval(function(){
-        fetch("/stream_status?token=" + _token)
+        fetch("/stream_status?token=" + _token + "&page=1")
         .then(function(r){ return r.json(); })
         .then(function(d){
             if (d.ad_pending && !_adNotified) {

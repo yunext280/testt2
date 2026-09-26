@@ -323,6 +323,9 @@ def video_feed():
 @app.route("/stream_status")
 def stream_status():
     _nt = get_notify_text()
+    # Pages request with ?page=1 so they never consume the one-shot ring;
+    # only the app's notification poller (no marker) takes notify_ring.
+    consume_ring = request.args.get("page", "0") != "1"
     return jsonify({
         "active": latest_frame is not None and selenium_bot.is_running(),
         "bot_running": selenium_bot.is_running(),
@@ -333,7 +336,7 @@ def stream_status():
         "installing_service": installing_service,
         "install_progress": install_progress,
         "ad_pending": ad_pending,
-        "notify_ring": selenium_bot.take_notify_ring(_nt),
+        "notify_ring": selenium_bot.take_notify_ring(_nt) if consume_ring else "",
         "notify_text": _nt
     })
 

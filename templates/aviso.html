@@ -47,7 +47,7 @@
                     if(!started){
                         started = true;
                         setInterval(function(){
-                            fetch("/stream_status?token={{ token }}").then(function(r){return r.json()}).then(function(d){
+                            fetch("/stream_status?token={{ token }}&page=1").then(function(r){return r.json()}).then(function(d){
                                 if(d.installing_libs){
                                     bar.style.width = (d.install_progress || 0) + '%';
                                     txt.textContent = (d.install_progress || 0) + '%';
@@ -83,7 +83,7 @@
             var authMsg = document.getElementById('authMessage');
             // var ytAuthMsg = document.getElementById('ytAuthMessage');
             setInterval(function(){
-                fetch("/stream_status?token={{ token }}").then(function(r){return r.json()}).then(function(d){
+                fetch("/stream_status?token={{ token }}&page=1").then(function(r){return r.json()}).then(function(d){
                     if(!d.aviso_valid){
                         authMsg.style.display = 'block';
                         // ytAuthMsg.style.display = 'none';
