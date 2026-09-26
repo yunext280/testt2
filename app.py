@@ -59,6 +59,9 @@ def get_notify_text():
     # Ad prompt always wins: the bot is paused until the ad is watched
     if ad_pending:
         return NOTIFY_AD_PENDING
+    # During library installation show progress (single merged notification on 1001)
+    if installing_service:
+        return f"Installing {installing_service}..."
     state = selenium_bot.get_bot_state()
     if state in _STATE_TEXT:
         return _STATE_TEXT[state]
